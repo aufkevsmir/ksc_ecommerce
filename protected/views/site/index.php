@@ -4,7 +4,7 @@ $this->pageTitle = 'Welcome to KSC Marketplace';
 
 <link href="<?php echo Yii::app()->baseUrl; ?>/css/site/index.css" rel="stylesheet">
 <link href="<?php echo Yii::app()->baseUrl; ?>/css/components/productCard.css" rel="stylesheet">
-<link rel="stylesheet" href="<?php echo Yii::app()->baseUrl; ?>/css/components/pagination.css">
+<link href="<?php echo Yii::app()->baseUrl; ?>/css/components/pagination.css" rel="stylesheet">
 
 <div class="homepage-wrapper">
 
@@ -24,11 +24,14 @@ $this->pageTitle = 'Welcome to KSC Marketplace';
       <h3 class="section-title">Shop by Category</h3>
       <div class="row text-center">
         <?php foreach ($categories as $label => $icon): ?>
-          <?php $isActive = isset($selectedCategory) && $selectedCategory === $label; ?>
+          <?php
+            $isActive = isset($selectedCategory) && $selectedCategory === $label;
+            $imagePath = Yii::app()->baseUrl . '/images/category-icons/' . CHtml::encode($icon);
+          ?>
           <div class="col-6 col-sm-4 col-md-3 mb-4">
             <a href="<?php echo $this->createUrl('site/index', ['category' => $label]); ?>"
               class="category-tile<?php echo $isActive ? ' active' : ''; ?>">
-              <img src="<?php echo Yii::app()->baseUrl; ?>/images/no-image.jpg"
+              <img src="<?php echo $imagePath; ?>"
                    alt="<?php echo CHtml::encode($label); ?>"
                    class="category-icon">
               <div class="category-label"><?php echo CHtml::encode($label); ?></div>

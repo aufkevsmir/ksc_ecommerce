@@ -47,15 +47,16 @@ class SiteController extends Controller
 		]);
 
 		$categories = [
-			'Men\'s Apparel' => 'mens.png',
-			'Mobiles & Gadgets' => 'mobiles.png',
-			'Home & Living' => 'home.png',
-			'Electronics' => 'electronics.png',
-			'Office Supplies' => 'office.png',
-			'Industrial Tools' => 'tools.png',
-			'Beauty & Health' => 'beauty.png',
-			'Food & Beverage' => 'food.png',
+		"Men's Apparel"      => 'mens_apparel.png',
+		"Mobile & Gadgets"   => 'mobile.png',
+		"Home & Living"      => 'home.png',
+		"Electronics"        => 'electronics.png',
+		"Office Supplies"    => 'office.png',
+		"Industrial Tools"   => 'industrial.png',
+		"Beauty & Health"    => 'bnh.png',
+		"Food & Beverage"    => 'mnh.png',
 		];
+
 
 		$this->render('index', [
 			'dataProvider' => $dataProvider,
