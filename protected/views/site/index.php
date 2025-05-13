@@ -9,14 +9,40 @@ $this->pageTitle = 'Welcome to KSC Marketplace';
 <div class="homepage-wrapper">
 
   <!-- Hero Section Card -->
-  <div class="section-card hero-card mb-4">
-    <section class="hero-section text-center">
-      <h1 class="hero-title">KSC B2B Marketplace</h1>
-      <p class="hero-subtitle">Your trusted platform to source, sell, and scale in the industrial marketplace.</p>
-      <a href="<?php echo Yii::app()->createUrl('site/login'); ?>" class="btn btn-cta">Get Started</a>
-      <div class="hero-bg"></div>
-    </section>
+  <!-- Shopee-style Hero Layout -->
+<div class="container mb-4">
+  <div class="row">
+    <!-- Left: Carousel -->
+    <div class="col-md-8">
+      <div id="heroCarousel" class="carousel slide shadow-sm" data-ride="carousel">
+        <div class="carousel-inner rounded">
+          <div class="carousel-item active">
+            <img src="<?php echo Yii::app()->baseUrl; ?>/images/banners/hero1.png" class="d-block w-100" alt="Slide 1">
+          </div>
+          <div class="carousel-item">
+            <img src="<?php echo Yii::app()->baseUrl; ?>/images/banners/hero2.png" class="d-block w-100" alt="Slide 2">
+          </div>
+        </div>
+        <a class="carousel-control-prev" href="#heroCarousel" role="button" data-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </a>
+        <a class="carousel-control-next" href="#heroCarousel" role="button" data-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Right: Static Promos -->
+    <div class="col-md-4 d-flex flex-column justify-content-between">
+      <div class="mb-3">
+        <img src="<?php echo Yii::app()->baseUrl; ?>/images/banners/promo1.png" class="img-fluid rounded shadow-sm" alt="Promo 1">
+      </div>
+      <div>
+        <img src="<?php echo Yii::app()->baseUrl; ?>/images/banners/promo2.png" class="img-fluid rounded shadow-sm" alt="Promo 2">
+      </div>
+    </div>
   </div>
+</div>
 
   <!-- Categories Section Card -->
   <div class="section-card compact-card mb-4">
