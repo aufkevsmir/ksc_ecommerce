@@ -1,0 +1,96 @@
+/* /css/products/view.css */
+
+.product-page {
+  font-size: 1rem;
+}
+
+/* Image */
+.product-page .product-image {
+  max-height: 350px;
+  object-fit: contain;
+}
+
+/* Title + Price */
+.product-title {
+  font-size: 1.5rem;
+  color: #D1001B;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.product-price {
+  font-size: 1.25rem;
+  color: #D1001B;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+/* Meta info (category, stock, seller) */
+.product-meta li {
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
+}
+
+/* Seller panel */
+.seller-panel {
+  background-color: #f8f9fa;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  padding: 1rem 1.5rem;
+}
+
+.seller-logo {
+  height: 48px;
+  width: 48px;
+  object-fit: cover;
+}
+
+/* Description */
+.product-description p {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Inquiries */
+.product-inquiries .list-group-item {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.product-inquiries .list-group-item strong {
+  font-size: 1.05rem;
+}
+
+.product-inquiries .list-group-item small {
+  font-size: 0.85rem;
+}
+
+/* Buttons */
+.btn-orange {
+  background-color: #D1001B;
+  color: white;
+  border: none;
+}
+
+.btn-orange:hover {
+  background-color: #b30018;
+  color: white;
+}
+
+.btn-outline-orange {
+  border-color: #D1001B;
+  color: #D1001B;
+}
+
+.btn-outline-orange:hover {
+  background-color: #D1001B;
+  color: white;
+}
+
+.product-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}

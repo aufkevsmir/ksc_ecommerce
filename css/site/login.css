@@ -1,0 +1,96 @@
+/* Container and Card Layout */
+.auth-container {
+  max-width: 960px;
+  min-height: 500px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  display: flex;
+  overflow: hidden;
+}
+
+/* Left Panel (Shopee color) */
+.auth-panel.left {
+  width: 40%;
+  background-color: #D1001B !important; /* Shopee Red */
+  color: white;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.auth-panel.left h2 {
+  color: white;
+  font-weight: 600;
+}
+
+.auth-panel.left p {
+  font-size: 0.95rem;
+  color: white;
+}
+
+.auth-panel.left .auth-switch-btn {
+  border: 1px solid white;
+  color: white;
+}
+
+.auth-panel.left .auth-switch-btn:hover {
+  background-color: white;
+  color: #D1001B;
+}
+
+/* Right Panel (Login/Register) */
+.auth-panel.right {
+  width: 60%;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.auth-panel.right .tab-content {
+  width: 100%;
+}
+
+/* Form Box */
+.auth-form {
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* Panel Switch Button */
+.auth-switch-btn {
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background-color: transparent;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Full-width Buttons */
+.btn-block {
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .auth-container {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .auth-panel.left,
+  .auth-panel.right {
+    width: 100%;
+    padding: 2rem 1.5rem;
+  }
+
+  .auth-panel.left {
+    order: 2;
+    border-top: 1px solid #ddd;
+  }
+}

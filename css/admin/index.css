@@ -1,0 +1,21 @@
+.section-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.section-card.compact-card {
+  padding: 1.25rem 1.5rem;
+}
+
+.btn-orange {
+  background-color: #D1001B;
+  color: white;
+  border: none;
+}
+.btn-orange:hover {
+  background-color: #bb0018;
+  color: white;
+}
