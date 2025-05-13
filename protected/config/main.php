@@ -81,8 +81,7 @@ return array(
 	// using Yii::app()->params['paramName']
 	'params'=>array(
     'adminEmail'=>'miranda.kevin@auf.edu.ph',
-    'stripeSecretKey' => 'sk_test_51QKHHT08dZUwkrCTPG67wRhw6Kw04j3ihzf740reESFLjREFn5sK1EWpLj5dNakkLwh55PFTxsQTaq6VtlyKq7Dc00JNwV8jZJ',        // Replace with your Stripe secret test key
-    'stripePublishableKey' => 'pk_test_51QKHHT08dZUwkrCTLc3oysRheQvdneb4LsXJWB4inadtA8dFKPUXDfIQNEH6e9o88sfeFVM4rFMnc9hJVpF2nBhq00fgkhWNOb',   // Replace with your Stripe publishable test key
+   // Replace with your Stripe publishable test key
 ),
 
 );
