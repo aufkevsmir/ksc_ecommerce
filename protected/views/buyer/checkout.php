@@ -6,9 +6,10 @@ Yii::app()->clientScript->registerScriptFile('https://js.stripe.com/v3/');
 <div class="container mt-5 mb-5">
   <h4 class="mb-4 font-weight-bold text-shopee">Checkout</h4>
 
-  <form id="payment-form" method="POST" action="<?php echo $this->createUrl('buyer/checkout'); ?>">
-    
-    <!-- Product Summary -->
+  <!-- ✅ Form now posts to orders/checkout -->
+  <form id="payment-form" method="POST" action="<?php echo Yii::app()->createUrl('orders/checkout'); ?>">
+
+    <!-- 🛒 Product Summary -->
     <div class="card mb-4">
       <div class="card-body">
         <h5 class="mb-3">Items in Your Order</h5>
@@ -39,19 +40,19 @@ Yii::app()->clientScript->registerScriptFile('https://js.stripe.com/v3/');
       </div>
     </div>
 
-    <!-- Stripe Card Form -->
+    <!-- 💳 Stripe Card Form -->
     <div class="card mb-4">
       <div class="card-body">
         <h5 class="mb-3">Payment</h5>
         <label for="card-element">Credit or debit card</label>
         <div id="card-element" class="form-control">
-          <!-- Stripe Element inserted here -->
+          <!-- Stripe Element will mount here -->
         </div>
         <div id="card-errors" class="text-shopee mt-2" role="alert"></div>
       </div>
     </div>
 
-    <!-- Stripe Token -->
+    <!-- Hidden Stripe Token + Amount -->
     <input type="hidden" name="amount" value="<?php echo $totalAmount; ?>">
     <input type="hidden" name="stripeToken" id="stripeToken">
 
@@ -62,6 +63,7 @@ Yii::app()->clientScript->registerScriptFile('https://js.stripe.com/v3/');
   </form>
 </div>
 
+<!-- Stripe JS Script -->
 <script>
   const stripe = Stripe('<?php echo Yii::app()->params["stripePublishableKey"]; ?>');
   const elements = stripe.elements();
@@ -75,7 +77,7 @@ Yii::app()->clientScript->registerScriptFile('https://js.stripe.com/v3/');
   const card = elements.create('card', { style });
   card.mount('#card-element');
 
-  card.addEventListener('change', function(event) {
+  card.on('change', function(event) {
     const displayError = document.getElementById('card-errors');
     displayError.textContent = event.error ? event.error.message : '';
   });

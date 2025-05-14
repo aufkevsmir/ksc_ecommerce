@@ -13,7 +13,7 @@ class OrdersController extends Controller
 	public function accessRules()
 	{
 		return array(
-			['allow', 'actions'=>['index','view'], 'users'=>['@']],
+			['allow', 'actions'=>['index','view','success'], 'users'=>['@']],
 			['allow', 'actions'=>['create','update','cancel','checkout','seller','updateStatus'], 'users'=>['@']],
 			['allow', 'actions'=>['admin','delete'], 'users'=>['admin']],
 			['deny', 'users'=>['*']],
@@ -22,18 +22,12 @@ class OrdersController extends Controller
 
 	public function actionView($id)
 	{
-		$order = Orders::model()->with([
-			'orderItems.product',
-			'seller',
-			'transaction',
-		])->findByPk($id);
-
+		$order = Orders::model()->with(['orderItems.product', 'seller', 'transaction'])->findByPk($id);
 		if (!$order) {
 			throw new CHttpException(404, 'Order not found.');
 		}
 
 		$role = Yii::app()->user->getState('role');
-
 		if (
 			($role === 'buyer' && $order->buyer_id !== Yii::app()->user->id) ||
 			($role === 'seller' && $order->seller->user_id !== Yii::app()->user->id)
@@ -42,40 +36,6 @@ class OrdersController extends Controller
 		}
 
 		$this->render('view', ['order' => $order]);
-	}
-
-	public function actionCreate()
-	{
-		$model = new Orders;
-
-		if (isset($_POST['Orders'])) {
-			$model->attributes = $_POST['Orders'];
-			if ($model->save())
-				$this->redirect(['view', 'id' => $model->id]);
-		}
-
-		$this->render('create', ['model' => $model]);
-	}
-
-	public function actionUpdate($id)
-	{
-		$model = $this->loadModel($id);
-
-		if (isset($_POST['Orders'])) {
-			$model->attributes = $_POST['Orders'];
-			if ($model->save())
-				$this->redirect(['view', 'id' => $model->id]);
-		}
-
-		$this->render('update', ['model' => $model]);
-	}
-
-	public function actionDelete($id)
-	{
-		$this->loadModel($id)->delete();
-
-		if (!isset($_GET['ajax']))
-			$this->redirect(isset($_POST['returnUrl']) ? $_POST['returnUrl'] : ['admin']);
 	}
 
 	public function actionIndex()
@@ -97,32 +57,6 @@ class OrdersController extends Controller
 		]);
 
 		$this->render('index', ['dataProvider' => $dataProvider]);
-	}
-
-	public function actionAdmin()
-	{
-		$model = new Orders('search');
-		$model->unsetAttributes();
-		if (isset($_GET['Orders'])) {
-			$model->attributes = $_GET['Orders'];
-		}
-		$this->render('admin', ['model' => $model]);
-	}
-
-	public function loadModel($id)
-	{
-		$model = Orders::model()->findByPk($id);
-		if ($model === null)
-			throw new CHttpException(404, 'The requested page does not exist.');
-		return $model;
-	}
-
-	protected function performAjaxValidation($model)
-	{
-		if (isset($_POST['ajax']) && $_POST['ajax'] === 'orders-form') {
-			echo CActiveForm::validate($model);
-			Yii::app()->end();
-		}
 	}
 
 	public function actionSeller()
@@ -148,6 +82,124 @@ class OrdersController extends Controller
 		$this->render('seller', ['dataProvider' => $dataProvider]);
 	}
 
+	public function actionCheckout()
+	{
+		if (Yii::app()->user->isGuest || Yii::app()->user->role !== 'buyer') {
+			$this->redirect(['site/login']);
+		}
+
+		$userId = Yii::app()->user->id;
+		$cartItems = Cart::model()->findAllByAttributes(['user_id' => $userId]);
+
+		if (empty($cartItems)) {
+			Yii::app()->user->setFlash('error', 'Your cart is empty.');
+			$this->redirect(['cart/index']);
+		}
+
+		$totalAmount = 0;
+		foreach ($cartItems as $item) {
+			$totalAmount += $item->quantity * $item->product->price;
+		}
+
+		if ($_POST) {
+			require_once(dirname(__FILE__) . '/../../vendor/autoload.php');
+			\Stripe\Stripe::setApiKey(Yii::app()->params['stripeSecretKey']);
+
+			$token = $_POST['stripeToken'];
+
+			try {
+				$charge = \Stripe\Charge::create([
+					'amount' => intval($totalAmount * 100),
+					'currency' => 'usd',
+					'source' => $token,
+					'description' => "KSC Order for User ID {$userId}",
+				]);
+
+				$order = new Orders;
+				$order->buyer_id = $userId;
+				$order->seller_id = $cartItems[0]->product->company_id;
+				$order->total_amount = $totalAmount;
+				$order->status = 'paid';
+				$order->created_at = new CDbExpression('NOW()');
+
+				if ($order->save()) {
+					foreach ($cartItems as $item) {
+						$orderItem = new OrderItems;
+						$orderItem->order_id = $order->id;
+						$orderItem->product_id = $item->product_id;
+						$orderItem->quantity = $item->quantity;
+						$orderItem->price = $item->product->price;
+						$orderItem->save();
+
+						$product = Products::model()->findByPk($item->product_id);
+						if ($product) {
+							$product->stock -= $item->quantity;
+							if ($product->stock < 0) $product->stock = 0;
+							$product->save(false);
+						}
+					}
+
+					$transaction = new Transactions;
+					$transaction->order_id = $order->id;
+					$transaction->payment_reference = $charge->id;
+					$transaction->amount = $totalAmount;
+					$transaction->payment_method = 'stripe';
+					$transaction->paid_at = new CDbExpression('NOW()');
+					$transaction->save();
+
+					Cart::model()->deleteAllByAttributes(['user_id' => $userId]);
+
+					// ✅ Zapier webhook
+					$buyer = Users::model()->findByPk($userId);
+					$webhookUrl = 'https://hooks.zapier.com/hooks/catch/22896966/2nxpkub/';
+					$payload = [
+						'order_id' => $order->id,
+						'buyer_email' => $buyer->email,
+						'total_amount' => $totalAmount,
+						'payment_reference' => $charge->id,
+						'paid_at' => date('Y-m-d H:i:s'),
+					];
+
+					$ch = curl_init($webhookUrl);
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+					curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+					curl_setopt($ch, CURLOPT_POST, true);
+					curl_exec($ch);
+					curl_close($ch);
+
+					$this->redirect(['orders/success', 'id' => $order->id]);
+				} else {
+					Yii::app()->user->setFlash('error', 'Order saving failed.');
+					$this->redirect(['cart/index']);
+				}
+			} catch (\Stripe\Exception\CardException $e) {
+				Yii::app()->user->setFlash('error', 'Payment failed: ' . $e->getMessage());
+				$this->redirect(['cart/index']);
+			}
+		}
+
+		$this->render('checkout', ['totalAmount' => $totalAmount]);
+	}
+
+	public function actionCancel($id)
+	{
+		if (Yii::app()->user->isGuest || Yii::app()->user->role !== 'buyer') {
+			throw new CHttpException(403, 'Unauthorized');
+		}
+
+		$order = Orders::model()->findByPk($id);
+		if (!$order || $order->buyer_id != Yii::app()->user->id || $order->status !== 'pending') {
+			throw new CHttpException(403, 'Order cannot be cancelled.');
+		}
+
+		$order->status = 'cancelled';
+		if ($order->save()) {
+			Yii::app()->user->setFlash('success', 'Order cancelled successfully.');
+		}
+
+		$this->redirect(['orders/index']);
+	}
+
 	public function actionUpdateStatus($id)
 	{
 		if (Yii::app()->user->isGuest || Yii::app()->user->role !== 'seller') {
@@ -170,95 +222,58 @@ class OrdersController extends Controller
 		$this->render('update_status', ['order' => $order]);
 	}
 
-	public function actionCancel($id)
+	public function actionSuccess($id)
 	{
-		if (Yii::app()->user->isGuest || Yii::app()->user->role !== 'buyer') {
-			throw new CHttpException(403, 'Unauthorized');
+		$order = Orders::model()->with('orderItems.product')->findByPk($id);
+		if (!$order || $order->buyer_id != Yii::app()->user->id) {
+			throw new CHttpException(403, 'Access denied.');
 		}
 
-		$order = Orders::model()->findByPk($id);
-		if (!$order || $order->buyer_id != Yii::app()->user->id || $order->status !== 'pending') {
-			throw new CHttpException(403, 'Order cannot be cancelled.');
-		}
-
-		$order->status = 'cancelled';
-		if ($order->save()) {
-			Yii::app()->user->setFlash('success', 'Order cancelled successfully.');
-		}
-
-		$this->redirect(['order/index']);
+		$this->render('success', ['order' => $order]);
 	}
 
-	public function actionCheckout()
+	public function actionCreate()
 	{
-		if (Yii::app()->user->isGuest || Yii::app()->user->role !== 'buyer') {
-			$this->redirect(['site/login']);
+		$model = new Orders;
+		if (isset($_POST['Orders'])) {
+			$model->attributes = $_POST['Orders'];
+			if ($model->save())
+				$this->redirect(['view', 'id' => $model->id]);
 		}
+		$this->render('create', ['model' => $model]);
+	}
 
-		$userId = Yii::app()->user->id;
-		$cartItems = Cart::model()->findAllByAttributes(['user_id' => $userId]);
-
-		if (empty($cartItems)) {
-			Yii::app()->user->setFlash('error', 'Your cart is empty.');
-			$this->redirect(['cart/index']);
+	public function actionUpdate($id)
+	{
+		$model = $this->loadModel($id);
+		if (isset($_POST['Orders'])) {
+			$model->attributes = $_POST['Orders'];
+			if ($model->save())
+				$this->redirect(['view', 'id' => $model->id]);
 		}
+		$this->render('update', ['model' => $model]);
+	}
 
-		$totalAmount = 0;
-		foreach ($cartItems as $item) {
-			$totalAmount += $item->quantity * $item->product->price;
+	public function actionDelete($id)
+	{
+		$this->loadModel($id)->delete();
+		if (!isset($_GET['ajax']))
+			$this->redirect(isset($_POST['returnUrl']) ? $_POST['returnUrl'] : ['admin']);
+	}
+
+	protected function performAjaxValidation($model)
+	{
+		if (isset($_POST['ajax']) && $_POST['ajax'] === 'orders-form') {
+			echo CActiveForm::validate($model);
+			Yii::app()->end();
 		}
+	}
 
-		if ($_POST) {
-			require_once(dirname(__FILE__) . '/../../vendor/autoload.php');
-			\Stripe\Stripe::setApiKey(Yii::app()->params['stripe_secret_key']);
-
-			$token = $_POST['stripeToken'];
-
-			try {
-				$charge = \Stripe\Charge::create([
-					'amount' => intval($totalAmount * 100),
-					'currency' => 'usd',
-					'source' => $token,
-					'description' => "KSC Order for User ID {$userId}",
-				]);
-
-				$order = new Orders;
-				$order->buyer_id = $userId;
-				$order->seller_id = $cartItems[0]->product->company_id;
-				$order->total_amount = $totalAmount;
-				$order->status = 'paid';
-				$order->created_at = new CDbExpression('NOW()');
-				if ($order->save()) {
-					foreach ($cartItems as $item) {
-						$orderItem = new OrderItems;
-						$orderItem->order_id = $order->id;
-						$orderItem->product_id = $item->product_id;
-						$orderItem->quantity = $item->quantity;
-						$orderItem->price = $item->product->price;
-						$orderItem->save();
-					}
-
-					$transaction = new Transactions;
-					$transaction->order_id = $order->id;
-					$transaction->payment_reference = $charge->id;
-					$transaction->amount = $totalAmount;
-					$transaction->payment_method = 'stripe';
-					$transaction->paid_at = new CDbExpression('NOW()');
-					$transaction->save();
-
-					Cart::model()->deleteAllByAttributes(['user_id' => $userId]);
-
-					$this->redirect(['order/success', 'id' => $order->id]);
-				} else {
-					Yii::app()->user->setFlash('error', 'Order saving failed.');
-					$this->redirect(['cart/index']);
-				}
-			} catch (\Stripe\Exception\CardException $e) {
-				Yii::app()->user->setFlash('error', 'Payment failed: ' . $e->getMessage());
-				$this->redirect(['cart/index']);
-			}
-		}
-
-		$this->render('checkout', ['totalAmount' => $totalAmount]);
+	protected function loadModel($id)
+	{
+		$model = Orders::model()->findByPk($id);
+		if ($model === null)
+			throw new CHttpException(404, 'The requested page does not exist.');
+		return $model;
 	}
 }

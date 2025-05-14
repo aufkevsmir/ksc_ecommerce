@@ -65,6 +65,8 @@ return array(
 				array(
 					'class'=>'CFileLogRoute',
 					'levels'=>'error, warning, info',
+					'enabled' => true,
+					'logFile' => 'application.log',
 				),
 				// uncomment the following to show log messages on web pages
 				/*

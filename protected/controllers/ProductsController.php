@@ -28,7 +28,7 @@ class ProductsController extends Controller
 {
 	return array(
 		array('allow',  // anyone can view and list products
-			'actions'=>array('index','view'),
+			'actions'=>array('index','view','testStock'),
 			'users'=>array('*'),
 		),
 		array('allow', // only authenticated sellers can create, update, delete
@@ -255,4 +255,28 @@ class ProductsController extends Controller
 			Yii::app()->end();
 		}
 	}
+
+	public function actionTestStock()
+{
+	$productId = 13; // 👈 Replace with a known product ID in your DB
+	$product = Products::model()->findByPk($productId);
+
+	if ($product) {
+		$old = $product->stock;
+		$product->stock -= 1;
+		if ($product->stock < 0) $product->stock = 0;
+
+		if ($product->save(false)) {
+			echo "✅ Stock updated successfully: {$old} → {$product->stock}";
+		} else {
+			echo "❌ Failed to save stock.";
+			var_dump($product->getErrors());
+		}
+	} else {
+		echo "❌ Product not found.";
+	}
+
+	Yii::app()->end(); // prevent Yii layout from rendering
+}
+
 }
