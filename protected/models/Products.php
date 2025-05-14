@@ -38,19 +38,18 @@ class Products extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('company_id, name, price', 'required'),
+			array('company_id, name, price, stock', 'required'),
 			array('company_id, stock', 'numerical', 'integerOnly'=>true),
+			array('price', 'numerical'), // ✅ Corrected here
 			array('name', 'length', 'max'=>150),
-			array('price', 'length', 'max'=>10),
 			array('image_url', 'length', 'max'=>255),
 			array('status', 'length', 'max'=>8),
 			array('description, created_at', 'safe'),
-			// The following rule is used by search().
-			// @todo Please remove those attributes that should not be searched.
 			array('id, company_id, name, description, price, stock, image_url, status, created_at', 'safe', 'on'=>'search'),
 			array('category', 'in', 'range' => ['Electronics', 'Fashion', 'Home', 'Office', 'Automotive', 'Other']),
 			array('category', 'safe'),
 		);
+
 	}
 
 	/**

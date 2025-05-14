@@ -40,8 +40,7 @@ $this->pageTitle = 'My Products';
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
-     aria-hidden="true">
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <form id="deleteForm" method="post" action="">
@@ -63,12 +62,11 @@ $this->pageTitle = 'My Products';
   </div>
 </div>
 
-<!-- Delete Modal Script -->
 <script>
   $('#deleteModal').on('show.bs.modal', function (event) {
-    const button = $(event.relatedTarget);
-    const productId = button.data('id');
-    const actionUrl = '<?php echo Yii::app()->createUrl("/products/delete"); ?>/' + productId;
+    var button = $(event.relatedTarget);
+    var productId = button.data('id');
+    var actionUrl = '<?php echo Yii::app()->createUrl("products/delete"); ?>/' + productId;
     $('#deleteForm').attr('action', actionUrl);
   });
 </script>

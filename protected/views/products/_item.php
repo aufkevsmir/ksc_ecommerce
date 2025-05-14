@@ -18,18 +18,22 @@
 
       <!-- Action Buttons -->
       <div class="mt-auto d-flex justify-content-between">
+        <!-- Edit -->
         <a href="<?php echo Yii::app()->createUrl('products/update', ['id' => $data->id]); ?>"
            class="btn btn-sm btn-outline-primary" title="Edit">
           <i class="bi bi-pencil"></i>
         </a>
-        <button type="button"
-                class="btn btn-sm btn-outline-danger"
-                data-toggle="modal"
-                data-target="#deleteModal"
-                data-id="<?php echo $data->id; ?>"
-                title="Delete">
-          <i class="bi bi-trash"></i>
-        </button>
+
+        <!-- Delete -->
+        <form method="post"
+              action="<?php echo Yii::app()->createUrl('products/delete', ['id' => $data->id]); ?>"
+              onsubmit="return confirm('Are you sure you want to delete this product?');"
+              style="display:inline;">
+          <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+            <i class="bi bi-trash"></i>
+          </button>
+        </form>
+
       </div>
     </div>
   </div>
