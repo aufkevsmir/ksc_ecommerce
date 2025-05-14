@@ -2,9 +2,30 @@
 class BuyerController extends Controller
 {
 	public function actionDashboard()
-	{
-		$this->render('dashboard');
-	}
+    {
+        $userId = Yii::app()->user->id;
+
+        $recentOrders = Orders::model()->findAll([
+            'condition' => 'buyer_id = :uid',
+            'params' => [':uid' => $userId],
+            'order' => 'created_at DESC',
+            'limit' => 5,
+        ]);
+
+        $recentInquiries = Inquiries::model()->with('product')->findAll([
+            'condition' => 'buyer_id = :uid', // ✅ fixed this line
+            'params' => [':uid' => $userId],
+            'order' => 't.created_at DESC',
+            'limit' => 5,
+        ]);
+
+        $this->render('dashboard', [
+            'recentOrders' => $recentOrders,
+            'recentInquiries' => $recentInquiries,
+        ]);
+    }
+
+
 
 	public function actionOrders()
 	{
