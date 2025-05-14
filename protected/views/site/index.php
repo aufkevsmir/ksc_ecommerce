@@ -85,3 +85,4 @@ $this->pageTitle = 'Welcome to KSC Marketplace';
   </div>
 
 </div>
+<?php $this->renderPartial('//layouts/_footer'); ?>
